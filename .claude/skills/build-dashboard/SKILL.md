@@ -48,10 +48,15 @@ owner: team@example.com
 domain: sales                    # one of config/platform.yaml domains: sales | products | operations | customers
 tags: [optional, list]
 
-filters:                         # page-level; applies to every component whose dataset has the field
-  - { field: order_date, type: date_range }     # date fields
+time:                            # the time bar (top of page). Use it for any dated data.
+  default_range: last_12_months  # all | last_12_months | last_24_months | year_to_date | last_quarter | last_month
+  grain: month                   # trend charts' default; viewers switch Month / Quarter / Year
+  compare: previous_year         # KPI deltas: previous_year (YoY) | previous_period (MoM/QoQ) | none
+
+filters:                         # dropdowns in the top bar; apply to every component whose dataset has the field
   - { field: region,     type: multi_select }   # string fields: multi_select | single_select | checklist
   - { field: discount,   type: range }          # numeric fields
+  # Don't filter on a dataset's time_field when `time:` is set; the time bar owns dates.
 
 layout:                          # rows top to bottom; 1-4 components per row, equal width
   - row:
@@ -63,7 +68,8 @@ layout:                          # rows top to bottom; 1-4 components per row, e
           type: line             # line | bar | stacked_bar | area | scatter | donut
           dataset: orders
           x: order_date          # dimension (scatter: a measure; donut: the slice names)
-          time_grain: month      # date x only: day | week | month | quarter | year (default month)
+          # time_grain: quarter  # date x only. Omit it so the chart follows the View-by switch;
+                                 # set it only to pin a grain (e.g. a quarterly comparison chart)
           y: sales               # measure, or a list of measures (without split_by)
           split_by: category     # optional dimension -> one series per value, with legend
           title: Monthly sales by category        # required
@@ -84,7 +90,9 @@ Other chart keys: `agg` (override aggregation: sum | mean | median | min | max |
 count_distinct | ratio), `sort: asc|desc` and `top_n` (bar, stacked_bar, donut),
 `horizontal: true` (bars; good for long category names), `detail` (scatter: one point per value).
 KPI keys: `agg`, `format` (currency | percent | number | integer; normally omit, it follows the
-field type), `reference` (measure to compare against), `lower_is_better`.
+field type), `reference` (measure to compare against, e.g. a target), `lower_is_better` (set it for
+costs, discounts, days-to-ship: a drop then shows green). With `time:` every KPI on a dated dataset
+automatically gets a change pill vs the comparison period and a sparkline.
 
 ### Rules the validator enforces
 - Datasets and fields must exist in `semantic/datasets.yaml`.
@@ -96,6 +104,8 @@ field type), `reference` (measure to compare against), `lower_is_better`.
 - **No SQL, connectors or table names** anywhere in a dashboard.
 
 ### Design guidance (the framework handles the look; you handle the story)
+- Add `time:` whenever the data is dated (check `rbc-bi datasets`: datasets list their time field).
+  Viewers then get a date range, Month/Quarter/Year and MoM/QoQ/YoY comparisons for free.
 - Lead with 3-4 KPIs that answer the headline question. Then trend, then breakdowns, then detail.
 - Trend over time -> `line` (or `area` for part-to-whole over time). Compare categories -> `bar`
   (sorted, `horizontal` if labels are long). Composition -> `stacked_bar`; `donut` only for 2-5
@@ -118,6 +128,6 @@ field type), `reference` (measure to compare against), `lower_is_better`.
 ## Review checklist before you report done
 - [ ] `rbc-bi validate` passes with no errors.
 - [ ] Every number the ask mentions is on the page, at the right grain and time range.
-- [ ] Filters cover the obvious slices (date + the main dimensions).
+- [ ] `time:` is set for dated data; filters cover the main dimensions (region, department, ...).
 - [ ] Titles are plain English; each chart answers one question.
 - [ ] You looked at the rendered page or snapshot, not just the YAML.

@@ -490,6 +490,50 @@
       ],
       "title": "Table",
       "type": "object"
+    },
+    "TimeControls": {
+      "additionalProperties": false,
+      "description": "Adds the time bar: a date range picker, a Month/Quarter/Year switch for trend charts and a\n'compare to' switch for KPI deltas. Acts on every component whose dataset has a `time_field`.",
+      "properties": {
+        "default_range": {
+          "default": "last_12_months",
+          "description": "Date range when the page opens.",
+          "enum": [
+            "all",
+            "last_12_months",
+            "last_24_months",
+            "year_to_date",
+            "last_quarter",
+            "last_month"
+          ],
+          "title": "Default Range",
+          "type": "string"
+        },
+        "grain": {
+          "default": "month",
+          "description": "Default trend granularity.",
+          "enum": [
+            "month",
+            "quarter",
+            "year"
+          ],
+          "title": "Grain",
+          "type": "string"
+        },
+        "compare": {
+          "default": "previous_year",
+          "description": "Default KPI comparison: previous_period (the same-length window just before the range, e.g. MoM/QoQ), previous_year (same window last year, YoY) or none.",
+          "enum": [
+            "previous_period",
+            "previous_year",
+            "none"
+          ],
+          "title": "Compare",
+          "type": "string"
+        }
+      },
+      "title": "TimeControls",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -541,9 +585,21 @@
       "title": "Tags",
       "type": "array"
     },
+    "time": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TimeControls"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Time bar: date range + Month/Quarter/Year + compare-to. Recommended for any dated data."
+    },
     "filters": {
       "default": [],
-      "description": "Page-level filters, applied to every component.",
+      "description": "Dropdown/checklist filters in the top bar, applied to every component.",
       "items": {
         "$ref": "#/$defs/Filter"
       },

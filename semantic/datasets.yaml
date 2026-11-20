@@ -8,6 +8,8 @@
 #     mean for percent.
 #   - `ratio: [numerator, denominator]` marks a ratio measure. It is re-computed correctly at any
 #     grain as sum(numerator) / sum(denominator), never as an average of row-level ratios.
+# `time_field` names the date field that a dashboard's time bar (date range, Month/Quarter/Year,
+# compare to previous period / last year) acts on.
 #
 # Add or change datasets with the `add-dataset` skill, then run `rbc-bi validate`.
 
@@ -19,6 +21,7 @@ datasets:
     connector: warehouse
     refresh: daily
     grain: [order_id, product_id]
+    time_field: order_date
     sql: |
       select
           order_id, order_date, ship_date, ship_mode,
@@ -58,6 +61,7 @@ datasets:
     connector: warehouse
     refresh: daily
     grain: [month, region]
+    time_field: month
     sql: |
       with actuals as (
           select cast(date_trunc('month', order_date) as date) as month, region,

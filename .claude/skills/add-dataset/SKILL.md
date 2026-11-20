@@ -31,7 +31,9 @@ never requires a dashboard change, as long as the field names stay the same.
      label: Profit margin, ratio: [profit, sales]}`.
    - Quote descriptions that contain commas or colons inside `{ ... }` flow mappings.
 5. **Set** `grain` (fields that make a row unique), `connector` (from `config/connectors.yaml`,
-   usually `warehouse`) and `refresh` (`realtime | hourly | daily`, the cache TTL).
+   usually `warehouse`), `refresh` (`realtime | hourly | daily`, the cache TTL) and, if rows are
+   dated, `time_field` (the date field the dashboard time bar acts on: date range, Month/Quarter/
+   Year, MoM/QoQ/YoY).
 6. **Validate:** `rbc-bi validate`. It runs your SQL with `LIMIT 0` and fails if the query errors
    or if returned columns and declared fields differ.
 7. **Sanity-check values:** `rbc-bi query "select count(*), sum(<measure>) from (<your sql>)"`.
@@ -46,6 +48,7 @@ never requires a dashboard change, as long as the field names stay the same.
     connector: warehouse
     refresh: daily
     grain: [customer_id]
+    time_field: first_order_date
     sql: |
       select customer_id, any_value(customer_name) as customer_name, any_value(segment) as segment,
              any_value(region) as region, min(order_date) as first_order_date,

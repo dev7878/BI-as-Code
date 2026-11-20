@@ -7,6 +7,7 @@ from vizro.models.types import capture
 from vizro.tables import dash_ag_grid
 
 from rbc_bi.components.aggregate import aggregate
+from rbc_bi.components.timebar import in_range, parse_range
 
 # AG Grid cell data types defined by Vizro's dash_ag_grid defaults.
 CELL_TYPES = {"currency": "dollar", "percent": "percent", "number": "numeric", "integer": "number"}
@@ -24,8 +25,10 @@ def rbc_table(
     sort: str = "desc",
     top_n: int | None = None,
     page_size: int = 20,
+    time_field: str | None = None,
+    date_range: list | None = None,
 ):
-    df = data_frame
+    df = in_range(data_frame, time_field, parse_range(date_range)) if time_field else data_frame
     if group_by:
         df = aggregate(df, group_by, {c: measures[c] for c in columns if c not in group_by})
     df = df[columns]

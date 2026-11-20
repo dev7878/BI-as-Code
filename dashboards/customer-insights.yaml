@@ -6,9 +6,12 @@ owner: customer-analytics@example.com
 domain: customers
 tags: [customers, segments]
 
+time:
+  default_range: last_12_months
+  grain: month
+  compare: previous_year
+
 filters:
-  - field: order_date
-    type: date_range
   - field: region
     type: multi_select
   - field: segment
@@ -24,10 +27,9 @@ layout:
           type: line
           dataset: orders
           x: order_date
-          time_grain: quarter
           y: sales
           split_by: segment
-          title: Quarterly sales by segment
+          title: Sales trend by segment
       - chart:
           type: bar
           dataset: orders

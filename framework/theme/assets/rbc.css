@@ -1,117 +1,318 @@
 /*
- * Framework theme layered on top of Vizro's light theme.
- * Every value comes from a CSS variable generated from framework/theme/tokens.yaml (_tokens.css).
- * Do not hard-code brand values here; change tokens.yaml instead.
+ * Framework theme, layered on Vizro. Every colour is a variable from _tokens.css, which is generated
+ * from framework/theme/tokens.yaml with one block per mode (light/dark). Don't hard-code colours here.
  */
 
-:root,
-[data-bs-theme="light"] {
-  --bs-body-font-family: var(--rbc-font);
-  --bs-primary: var(--rbc-primary);
-  --bs-link-color: var(--rbc-primary);
-  --bs-body-color: var(--rbc-text);
-  --bs-secondary-color: var(--rbc-text-secondary);
-  --bs-body-bg: var(--rbc-page);
-  --mantine-color-blue-filled: var(--rbc-primary);
-}
-
-body,
-#dashboard-container {
+/* ---- Base --------------------------------------------------------------------------------- */
+html, body, #dashboard-container {
   background: var(--rbc-page);
+  color: var(--rbc-text);
   font-family: var(--rbc-font);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
 }
+.rbc-kpi-value, .ag-cell, .rbc-pill { font-variant-numeric: tabular-nums; }
 
-/* ---- Brand header bar ------------------------------------------------------------------- */
+/* ---- Header: quiet bar with a brand monogram ---------------------------------------------- */
 #header {
-  background: var(--rbc-primary);
-  border-bottom: 4px solid var(--rbc-accent);
-}
-#header #dashboard-title,
-#header .dashboard_title,
-#header .material-symbols-outlined {
-  color: var(--rbc-on-primary);
+  background: color-mix(in srgb, var(--rbc-surface) 88%, transparent);
+  backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--rbc-border);
+  min-height: 60px;
 }
 #dashboard-title {
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--rbc-text);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
+#dashboard-title::before {
+  content: var(--rbc-mark);
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--rbc-primary), color-mix(in srgb, var(--rbc-primary) 55%, var(--rbc-accent)));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--rbc-primary) 35%, transparent);
+}
+#header .material-symbols-outlined,
+.btn-theme-toggle {
+  color: var(--rbc-text-2);
+}
+.btn-theme-toggle {
+  border-radius: 9px;
+  border: 1px solid var(--rbc-border);
+  background: var(--rbc-surface);
+}
+.btn-theme-toggle:hover { background: var(--rbc-surface-2); }
 
-/* ---- Left rail (navigation + filters) --------------------------------------------------- */
+/* ---- Left navigation ---------------------------------------------------------------------- */
 #left-side {
-  background: var(--rbc-card);
+  background: var(--rbc-surface);
   border-right: 1px solid var(--rbc-border);
 }
-#control-panel {
-  border-top: 1px solid var(--rbc-border);
+#nav-panel .accordion-item,
+#nav-panel .accordion-button {
+  background: transparent;
+  border: 0;
 }
-
-/* ---- Page ------------------------------------------------------------------------------- */
-#page-title {
+#nav-panel .accordion-button {
+  color: var(--rbc-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+#nav-panel .accordion-item-link.nav-link {
+  color: var(--rbc-text-2);
+  border-radius: 8px;
+  margin: 1px 0;
+  font-weight: 500;
+  border-left: 0;
+}
+#nav-panel .accordion-item-link.nav-link:hover {
+  background: var(--rbc-surface-2);
   color: var(--rbc-text);
+}
+#nav-panel .accordion-item-link.nav-link.active {
+  background: var(--rbc-primary-soft);
+  color: var(--rbc-primary);
   font-weight: 600;
 }
 
-/* Every component sits on a white card with a hairline border. */
-#page-components .figure-container:not(:has(> .card-kpi)),
-#page-components .card-kpi {
-  background: var(--rbc-card);
+/* ---- Page title --------------------------------------------------------------------------- */
+#page-title {
+  color: var(--rbc-text);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+#page-header .material-symbols-outlined { color: var(--rbc-muted); }
+
+/* ---- Top filter bar ----------------------------------------------------------------------- */
+#page-components .container-controls-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 18px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  background: var(--rbc-surface);
   border: 1px solid var(--rbc-border);
-  border-radius: 8px;
+  border-radius: var(--rbc-radius-card);
+  box-shadow: var(--rbc-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.container-controls-panel > * { min-width: 170px; flex: 0 1 auto; }
+.container-controls-panel > [id$="__range"] { min-width: 240px; }
+.container-controls-panel .form-label,
+.container-controls-panel legend.form-label {
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rbc-muted);
+  margin-bottom: 6px;
+}
+/* Inputs as soft pills */
+.container-controls-panel .mantine-Input-input,
+.container-controls-panel .dash-dropdown {
+  background: var(--rbc-surface-2) !important;
+  border: 1px solid var(--rbc-border) !important;
+  border-radius: var(--rbc-radius-control) !important;
+  color: var(--rbc-text) !important;
+  min-height: 36px;
+  font-size: 13px;
+}
+.container-controls-panel .mantine-Input-input:hover,
+.container-controls-panel .dash-dropdown:hover { border-color: var(--rbc-border-strong) !important; }
+
+/* Radio groups (View by / Compare to) as segmented controls */
+.container-controls-panel fieldset > div:has(> .form-check-inline > input[type="radio"]) {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: var(--rbc-surface-2);
+  border: 1px solid var(--rbc-border);
+  border-radius: var(--rbc-radius-control);
+}
+.container-controls-panel .form-check-inline:has(> input[type="radio"]) {
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+.container-controls-panel input[type="radio"].form-check-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.container-controls-panel input[type="radio"] + .form-check-label {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--rbc-text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.container-controls-panel input[type="radio"] + .form-check-label:hover { color: var(--rbc-text); }
+.container-controls-panel input[type="radio"]:checked + .form-check-label {
+  background: var(--rbc-surface);
+  color: var(--rbc-primary);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 0 0 1px var(--rbc-border);
+}
+.container-controls-panel input[type="radio"]:focus-visible + .form-check-label {
+  outline: 2px solid var(--rbc-accent);
+  outline-offset: 1px;
+}
+
+/* ---- Cards (charts, tables) --------------------------------------------------------------- */
+#page-components .figure-container:not(:has(> .rbc-kpi)) {
+  background: var(--rbc-surface);
+  border: 1px solid var(--rbc-border);
+  border-radius: var(--rbc-radius-card);
+  box-shadow: var(--rbc-shadow);
+  padding: 16px 18px 10px;
 }
 #page-components .loading-container > .figure-container,
-#page-components > div > .loading-container {
-  height: 100%;
+#page-components .loading-container { height: 100%; }
+.figure-title {
+  color: var(--rbc-text);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.005em;
 }
-#page-components .figure-container:not(:has(> .card-kpi)) {
-  padding: 12px 16px 8px;
-}
-#page-components .figure-container:has(> .card-kpi) {
+.figure-title .material-symbols-outlined { color: var(--rbc-muted); font-size: 16px; }
+
+/* ---- KPI cards ---------------------------------------------------------------------------- */
+#page-components .figure-container:has(> .rbc-kpi) {
   padding: 0;
   border: 0;
   background: transparent;
 }
-.card-kpi {
+.rbc-kpi {
   height: 100%;
-}
-.figure-title {
-  color: var(--rbc-text);
-  font-weight: 600;
-}
-
-/* KPI cards: brand accent on the left edge. */
-.card-kpi {
-  border-left: 4px solid var(--rbc-primary) !important;
-  box-shadow: none;
-}
-.card-kpi .card-kpi-title {
-  color: var(--rbc-text-secondary);
-}
-.card-kpi .card-body {
-  color: var(--rbc-text);
-  font-weight: 600;
-}
-.card-kpi .color-pos {
-  color: var(--rbc-positive);
-}
-.card-kpi .color-neg {
-  color: var(--rbc-negative);
-}
-
-/* Catalog cards. */
-.card-wrapper .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 16px 18px 14px;
+  background: var(--rbc-surface);
   border: 1px solid var(--rbc-border);
-  border-top: 3px solid var(--rbc-primary);
-  background: var(--rbc-card);
+  border-radius: var(--rbc-radius-card);
+  box-shadow: var(--rbc-shadow);
+  position: relative;
+  overflow: hidden;
+}
+.rbc-kpi::before {           /* thin brand accent along the top edge */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rbc-primary), color-mix(in srgb, var(--rbc-primary) 40%, var(--rbc-accent)));
+  opacity: 0.9;
+}
+.rbc-kpi-title {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rbc-muted);
+}
+.rbc-kpi-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rbc-kpi-value {
+  font-size: 30px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--rbc-text);
+  white-space: nowrap;
+}
+.rbc-kpi-spark { width: 42%; max-width: 160px; height: 48px; flex-shrink: 1; }
+.rbc-kpi-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+}
+.rbc-kpi-note { color: var(--rbc-muted); }
+.rbc-kpi-ref-good { color: var(--rbc-good); }
+.rbc-kpi-ref-bad { color: var(--rbc-bad); }
+.rbc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+.rbc-pill-good { color: var(--rbc-good); background: var(--rbc-good-bg); }
+.rbc-pill-bad { color: var(--rbc-bad); background: var(--rbc-bad-bg); }
+.rbc-pill-flat { color: var(--rbc-text-2); background: var(--rbc-flat-bg); }
+
+/* ---- Tables (AG Grid follows the Bootstrap variables; tidy the edges) --------------------- */
+.ag-theme-vizro, .ag-root-wrapper {
+  border-radius: 10px;
+  border-color: var(--rbc-border) !important;
 }
 
-/* Primary actions use the brand colour. */
-.btn-primary,
-.mantine-Button-root[data-variant="filled"] {
-  background-color: var(--rbc-primary);
-  border-color: var(--rbc-primary);
+/* ---- Buttons ------------------------------------------------------------------------------ */
+#page-components .btn,
+#page-components .mantine-Button-root {
+  border-radius: var(--rbc-radius-control);
+  font-weight: 550;
 }
 
-/* ---- Snapshot mode (?snapshot=1) -------------------------------------------------------- */
+/* ---- Catalog cards ------------------------------------------------------------------------ */
+.card-wrapper .card {
+  background: var(--rbc-surface);
+  border: 1px solid var(--rbc-border);
+  border-radius: var(--rbc-radius-card);
+  box-shadow: var(--rbc-shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card-wrapper-actions > .card:hover,
+.card-wrapper .card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--rbc-primary) 45%, var(--rbc-border));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--rbc-primary) 12%, transparent);
+}
+.card-wrapper .card-header {
+  background: transparent;
+  border: 0;
+  color: var(--rbc-primary);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.card-wrapper .card-footer {
+  background: transparent;
+  border-top: 1px solid var(--rbc-border);
+  color: var(--rbc-muted);
+  font-size: 12px;
+}
+
+/* ---- Snapshot mode (?snapshot=1) ---------------------------------------------------------- */
 .rbc-snapshot #left-side,
 .rbc-snapshot #collapse-icon-outer,
 .rbc-snapshot #header-right,
@@ -120,9 +321,8 @@ body,
 .rbc-snapshot .modebar-container {
   display: none !important;
 }
-.rbc-snapshot #page-main {
-  width: 100%;
-}
+.rbc-snapshot #page-components .container-controls-panel { position: static; box-shadow: none; }
+.rbc-snapshot #page-main { width: 100%; }
 /* Let the page grow so a full-page capture includes everything below the fold. */
 .rbc-snapshot,
 .rbc-snapshot body,
@@ -138,6 +338,9 @@ body,
 
 /* Visible keyboard focus everywhere (WCAG 2.4.7). */
 :focus-visible {
-  outline: 3px solid var(--rbc-accent) !important;
+  outline: 2px solid var(--rbc-accent) !important;
   outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }

@@ -264,6 +264,13 @@ def check_semantic(semantic: SemanticLayer, connectors: ConnectorsConfig | None,
         if connectors and ds.connector not in connectors.connectors:
             errors.append(SpecError(file, f"{base}.connector",
                                     f"'{ds.connector}' is not defined in config/connectors.yaml." + _hint(ds.connector, connectors.connectors)))
+        if ds.time_field:
+            tf = ds.fields.get(ds.time_field)
+            if tf is None:
+                errors.append(SpecError(file, f"{base}.time_field", f"'{ds.time_field}' is not a field of this dataset."
+                                        + _hint(ds.time_field, ds.fields)))
+            elif tf.type != "date":
+                errors.append(SpecError(file, f"{base}.time_field", f"'{ds.time_field}' must be a date field (it is {tf.type})."))
         for g in ds.grain:
             if g not in ds.fields:
                 errors.append(SpecError(file, f"{base}.grain", f"'{g}' is not a field of this dataset." + _hint(g, ds.fields)))
@@ -483,8 +490,18 @@ def check_dashboard(spec: DashboardSpec, file: str, semantic: SemanticLayer, pla
             if body.sort_by and body.sort_by not in body.columns:
                 c.err(f"{path}.sort_by", f"'{body.sort_by}' must be one of the table's columns." + _hint(body.sort_by, body.columns, "Columns"))
 
+    if spec.time:
+        timed = [n for n, d in used.items() if d.time_field]
+        if not timed:
+            c.err("time", "no dataset on this page has a `time_field`, so the time bar would do nothing. "
+                          "Remove `time`, or set time_field on the dataset in semantic/datasets.yaml.")
+    time_fields = {d.time_field for d in used.values() if d.time_field}
     for i, flt in enumerate(spec.filters):
         p = f"filters[{i}]"
+        if spec.time and flt.field in time_fields:
+            c.err(f"{p}.field", f"'{flt.field}' is controlled by the time bar (`time:`). Remove this filter and set "
+                                f"`time.default_range` instead.")
+            continue
         owners = {n: d for n, d in used.items() if flt.field in d.fields}
         if not owners:
             all_fields = {f for d in used.values() for f in d.fields}

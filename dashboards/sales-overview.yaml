@@ -6,9 +6,12 @@ owner: sales-analytics@example.com
 domain: sales
 tags: [sales, monthly]
 
+time:
+  default_range: last_12_months
+  grain: month
+  compare: previous_year
+
 filters:
-  - field: order_date
-    type: date_range
   - field: region
     type: multi_select
   - field: segment
@@ -27,11 +30,10 @@ layout:
           type: line
           dataset: orders
           x: order_date
-          time_grain: month
           y: sales
           split_by: category
-          title: Monthly sales by category
-          description: Net sales per month, one line per product category.
+          title: Sales trend by category
+          description: Net sales per period, one line per product category.
   - row:
       - chart:
           type: bar

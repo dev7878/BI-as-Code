@@ -12,8 +12,10 @@ import plotly.graph_objects as go
 from vizro.models.types import capture
 
 from rbc_bi.components.aggregate import aggregate, bucket_dates
+from rbc_bi.components.timebar import in_range, parse_range
 from rbc_bi.theme.theme import AXIS_FORMATS, D3_FORMATS, tokens
 
+DATE_DTICK = {"quarter": "M3", "year": "M12"}
 DATE_TICKS = {"day": "%d %b %Y", "week": "%d %b %Y", "month": "%b %Y", "quarter": "Q%q %Y", "year": "%Y"}
 
 
@@ -64,9 +66,11 @@ def rbc_chart(
     top_n: int | None = None,
     horizontal: bool = False,
     source: str | None = None,
+    time_field: str | None = None,
+    date_range: list | None = None,
 ) -> go.Figure:
     t = tokens()
-    df = data_frame
+    df = in_range(data_frame, time_field, parse_range(date_range)) if time_field else data_frame
     if x_is_date:
         df = df.assign(**{x: bucket_dates(df[x], time_grain or "month")})
 
@@ -122,12 +126,11 @@ def rbc_chart(
         fig.update_traces(marker_line_width=0)
     elif chart_type == "scatter":
         fig = px.scatter(data, x=X, y=yarg, hover_name=labels.get(detail) if detail else None, **common)
-        fig.update_traces(marker=dict(size=10, opacity=0.85, line=dict(width=2, color=t["surface"]["card"])))
+        fig.update_traces(marker=dict(size=10, opacity=0.9))  # surface ring comes from the theme template
     elif chart_type == "donut":
         fig = px.pie(data, names=X, values=Y[0], hole=0.6, color=X, color_discrete_map=colours,
                      category_orders=category_orders)
         fig.update_traces(textinfo="percent", textposition="outside", sort=False,
-                          marker_line=dict(color=t["surface"]["card"], width=2),
                           hovertemplate=f"%{{label}}<br>%{{value:{D3_FORMATS[fmt]}}} (%{{percent}})<extra></extra>")
     else:  # unreachable: validated upstream
         raise ValueError(f"unknown chart type {chart_type}")
@@ -139,7 +142,10 @@ def rbc_chart(
         if chart_type == "scatter":
             fig.update_xaxes(tickformat=AXIS_FORMATS[formats[x]], hoverformat=D3_FORMATS[formats[x]])
         if x_is_date:
-            fig.update_xaxes(tickformat=DATE_TICKS[time_grain or "month"], hoverformat=DATE_TICKS[time_grain or "month"])
+            g = time_grain or "month"
+            fig.update_xaxes(tickformat=DATE_TICKS[g], hoverformat=DATE_TICKS[g])
+            if g in DATE_DTICK:  # one tick per bucket, so labels never repeat ("Q1, Q1, Q2")
+                fig.update_xaxes(dtick=DATE_DTICK[g], tick0=data[X].min() if len(data) else None)
         if len(Y) > 1:
             (fig.update_xaxes if horizontal else fig.update_yaxes)(title_text="")
         if chart_type in ("line", "area"):

@@ -6,9 +6,12 @@ owner: fulfilment-ops@example.com
 domain: operations
 tags: [shipping, operations]
 
+time:
+  default_range: last_12_months
+  grain: month
+  compare: previous_year
+
 filters:
-  - field: order_date
-    type: date_range
   - field: ship_mode
     type: checklist
   - field: region
@@ -17,7 +20,7 @@ filters:
 layout:
   - row:
       - kpi: { dataset: orders, measure: order_id, agg: count_distinct, title: Orders }
-      - kpi: { dataset: orders, measure: days_to_ship, title: Avg days to ship, format: number }
+      - kpi: { dataset: orders, measure: days_to_ship, title: Avg days to ship, format: number, lower_is_better: true }
       - kpi: { dataset: orders, measure: quantity, title: Units shipped }
   - row:
       - chart:
@@ -40,7 +43,6 @@ layout:
           type: area
           dataset: orders
           x: order_date
-          time_grain: month
           y: quantity
           split_by: ship_mode
-          title: Units shipped per month by ship mode
+          title: Units shipped by ship mode

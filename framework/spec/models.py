@@ -69,6 +69,9 @@ class DatasetSpec(Strict):
     refresh: Literal["realtime", "hourly", "daily"] = Field("daily", description="Cache TTL for query results.")
     grain: list[str] = Field(description="Fields that uniquely identify a row.")
     sql: str = Field(description="SQL against the connector. Must return every field listed in `fields`.")
+    time_field: str | None = Field(
+        None, description="The date field that dashboard time controls (date range, grain, compare) act on."
+    )
     fields: dict[str, FieldSpec]
 
 
@@ -182,6 +185,23 @@ class Filter(Strict):
     title: str | None = Field(None, description="Label. Defaults to the field label.")
 
 
+DefaultRange = Literal["all", "last_12_months", "last_24_months", "year_to_date", "last_quarter", "last_month"]
+Compare = Literal["previous_period", "previous_year", "none"]
+
+
+class TimeControls(Strict):
+    """Adds the time bar: a date range picker, a Month/Quarter/Year switch for trend charts and a
+    'compare to' switch for KPI deltas. Acts on every component whose dataset has a `time_field`."""
+
+    default_range: DefaultRange = Field("last_12_months", description="Date range when the page opens.")
+    grain: Literal["month", "quarter", "year"] = Field("month", description="Default trend granularity.")
+    compare: Compare = Field(
+        "previous_year",
+        description="Default KPI comparison: previous_period (the same-length window just before the range, "
+                    "e.g. MoM/QoQ), previous_year (same window last year, YoY) or none.",
+    )
+
+
 class AccessGroups(Strict):
     groups: list[str] = Field(min_length=1)
 
@@ -196,7 +216,10 @@ class DashboardSpec(Strict):
         "public", description="Recorded for governance. Not enforced in the prototype."
     )
     tags: list[str] = []
-    filters: list[Filter] = Field([], description="Page-level filters, applied to every component.")
+    time: TimeControls | None = Field(
+        None, description="Time bar: date range + Month/Quarter/Year + compare-to. Recommended for any dated data."
+    )
+    filters: list[Filter] = Field([], description="Dropdown/checklist filters in the top bar, applied to every component.")
     layout: list[Row] = Field(min_length=1, description="Rows of components; the framework sizes and spaces them.")
 
     def components(self):

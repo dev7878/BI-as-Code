@@ -6,9 +6,12 @@ owner: merchandising@example.com
 domain: products
 tags: [profit, discount, products]
 
+time:
+  default_range: last_12_months
+  grain: month
+  compare: previous_year
+
 filters:
-  - field: order_date
-    type: date_range
   - field: category
     type: multi_select
   - field: region
@@ -18,7 +21,7 @@ layout:
   - row:
       - kpi: { dataset: orders, measure: profit, title: Profit }
       - kpi: { dataset: orders, measure: profit_margin, title: Profit margin }
-      - kpi: { dataset: orders, measure: discount, title: Average discount }
+      - kpi: { dataset: orders, measure: discount, title: Average discount, lower_is_better: true }
   - row:
       - chart:
           type: bar

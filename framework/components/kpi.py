@@ -1,18 +1,60 @@
-"""KPI card: one headline number, optionally compared with a reference measure (e.g. a target).
+"""KPI card: headline value, change vs a comparison period, optional reference (e.g. target), sparkline.
 
-Renders with Vizro's own KPI card CSS classes so it looks native, but aggregates through the
-semantic layer (ratio measures are computed correctly).
+    SALES                                   ╱╲╱
+    $2.30M                               ╱╲╱
+    [▲ 4.5%] vs last year · 104% of target
+
+Aggregation goes through the semantic layer, so ratio measures (margins, attainment) are computed
+correctly for every window. Percent measures show change in percentage points.
 """
 
 from __future__ import annotations
 
-import dash_bootstrap_components as dbc
 import pandas as pd
-from dash import html
+import plotly.graph_objects as go
+from dash import dcc, html
 from vizro.models.types import capture
 
-from rbc_bi.components.aggregate import aggregate_scalar
-from rbc_bi.theme.theme import format_value
+from rbc_bi.components.aggregate import aggregate, aggregate_scalar, bucket_dates
+from rbc_bi.components.timebar import COMPARE_LABEL, comparison_range, in_range, parse_range
+from rbc_bi.theme.theme import format_value, tokens
+
+
+def _sparkline(df: pd.DataFrame, measure: str, agg: dict, time_field: str, grain: str):
+    if df.empty:
+        return None
+    s = aggregate(df.assign(**{time_field: bucket_dates(df[time_field], grain)}), [time_field], {measure: agg})
+    if len(s) < 2:
+        return None
+    colour = tokens()["brand"]["chart_primary"]
+    fig = go.Figure(go.Scatter(
+        x=s[time_field], y=s[measure], mode="lines", line=dict(color=colour, width=2, shape="spline", smoothing=0.6),
+        fill="tozeroy", fillcolor=tokens()["brand"]["chart_primary_fill"], hoverinfo="skip",
+    ))
+    fig.update_layout(
+        template=None, margin=dict(l=0, r=0, t=2, b=0), height=48, showlegend=False,
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(visible=False), yaxis=dict(visible=False, rangemode="tozero"),
+    )
+    return dcc.Graph(figure=fig, config={"staticPlot": True, "displayModeBar": False}, className="rbc-kpi-spark")
+
+
+def _delta(cur: float, prev: float, fmt: str, lower_is_better: bool):
+    """(text, css class, arrow) for the change pill; percent measures change in percentage points."""
+    if prev != prev or cur != cur:  # NaN
+        return None
+    if fmt == "percent":
+        change = cur - prev
+        text = f"{abs(change) * 100:.1f} pts"
+    else:
+        if not prev:
+            return None
+        change = (cur - prev) / abs(prev)
+        text = f"{abs(change):.1%}"
+    if abs(change) < 1e-12:
+        return text, "flat", "→"
+    good = (change < 0) if lower_is_better else (change > 0)
+    return text, ("good" if good else "bad"), ("▲" if change > 0 else "▼")
 
 
 @capture("figure")
@@ -25,30 +67,45 @@ def rbc_kpi(
     reference: str | None = None,
     reference_agg: dict | None = None,
     lower_is_better: bool = False,
+    time_field: str | None = None,
+    date_range: list | None = None,
+    compare: str = "none",
+    time_grain: str = "month",
 ):
-    value = aggregate_scalar(data_frame, agg, measure)
-    header = dbc.CardHeader(html.H4(title, className="card-kpi-title"), className="card-kpi-header")
-    body = dbc.CardBody(format_value(value, fmt))
-    if not reference:
-        return dbc.Card([header, body], class_name="card-kpi")
+    rng = parse_range(date_range) if time_field else None
+    cur = in_range(data_frame, time_field, rng)
+    value = aggregate_scalar(cur, agg, measure)
 
-    ref = aggregate_scalar(data_frame, reference_agg, reference)
-    delta = value - ref
-    rel = delta / abs(ref) if ref else float("nan")
-    good = (delta < 0) if lower_is_better else (delta > 0)
-    cls = "" if delta == 0 else ("color-pos" if good else "color-neg")
-    arrow = "arrow_circle_up" if delta > 0 else "arrow_circle_down" if delta < 0 else "do_not_disturb_on"
-    word = "above" if delta > 0 else "below" if delta < 0 else "at"
-    footer = dbc.CardFooter(
+    footer = []
+    prev_rng = comparison_range(rng, compare)
+    if prev_rng is not None:
+        prev = in_range(data_frame, time_field, prev_rng)
+        d = _delta(value, aggregate_scalar(prev, agg, measure) if not prev.empty else float("nan"), fmt, lower_is_better)
+        if d:
+            text, cls, arrow = d
+            footer.append(html.Span([html.Span(arrow, **{"aria-hidden": "true"}), f" {text}"],
+                                    className=f"rbc-pill rbc-pill-{cls}"))
+            footer.append(html.Span(COMPARE_LABEL[compare], className="rbc-kpi-note"))
+        else:
+            footer.append(html.Span(f"no data {COMPARE_LABEL[compare]}", className="rbc-kpi-note"))
+    if reference:
+        ref = aggregate_scalar(cur, reference_agg, reference)
+        if ref:
+            ratio = value / ref
+            good = (ratio <= 1) if lower_is_better else (ratio >= 1)
+            if footer:
+                footer.append(html.Span("·", className="rbc-kpi-note"))
+            footer.append(html.Span(f"{ratio:.0%} of {format_value(ref, fmt)} target",
+                                    className=f"rbc-kpi-note rbc-kpi-ref-{'good' if good else 'bad'}"))
+
+    spark = _sparkline(cur, measure, agg, time_field, time_grain) if time_field else None
+    return html.Div(
         [
-            html.Span(
-                [html.Span(arrow, className="material-symbols-outlined", **{"aria-hidden": "true"}),
-                 html.Span(f"{rel:+.1%}" if rel == rel else "-")],
-                className="card-kpi-delta-chip",
-            ),
-            # Words as well as colour: never colour alone.
-            html.Span(f"{word} {format_value(ref, fmt)} ref.", className="card-kpi-reference-text"),
+            html.Div(title, className="rbc-kpi-title"),
+            html.Div([html.Div(format_value(value, fmt), className="rbc-kpi-value"), spark], className="rbc-kpi-main"),
+            html.Div(footer, className="rbc-kpi-footer") if footer else None,
         ],
-        class_name=cls,
+        className="rbc-kpi",
+        role="group",
+        **{"aria-label": title},
     )
-    return dbc.Card([header, body, footer], class_name="card-kpi")

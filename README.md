@@ -40,8 +40,9 @@ The raw CSV is committed so the repo works offline. To re-download it from Kaggl
 | **5 example dashboards** | `dashboards/*.yaml`: sales overview, regional sales vs target, product profitability, shipping operations, customer insights |
 | **Semantic layer** | `semantic/datasets.yaml`: `orders` (order lines) and `sales_vs_target` (month x region). Ratio metrics re-aggregate correctly. |
 | **Validator** | Pydantic + cross-reference checks. Typos get "Did you mean ...?", style keys and SQL are rejected. |
+| **Top filter bar** | Every page: date range, **View by Month / Quarter / Year**, **Compare to previous period (MoM/QoQ) or last year (YoY)**, plus dropdown filters. Spec: one `time:` block. |
 | **Components** | KPI (with optional reference/target), line, bar, stacked bar, area, scatter, donut, table (grouped, top-N, CSV/Excel export) |
-| **Theme** | `framework/theme/tokens.yaml` (one file re-skins everything) |
+| **Theme** | Light and dark modes from `framework/theme/tokens.yaml` (one file re-skins everything). KPI cards with change pills and sparklines. |
 | **Agent skills** | `.claude/skills/`: `build-dashboard`, `add-dataset`, `debug-dashboard` (also referenced from `.github/copilot-instructions.md`) |
 | **CLI** | `rbc-bi validate / run / datasets / sql / query / snapshot / schema / data` |
 | **Live reload** | `rbc-bi run` restarts when any YAML or framework file changes; refresh the browser |

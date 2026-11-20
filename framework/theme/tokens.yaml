@@ -1,38 +1,66 @@
 # Design tokens: the ONE place the look of every dashboard is defined.
-# Change values here and every dashboard re-skins on the next app start. Specs can't override any
-# of this.
+# Change values here and every dashboard re-skins on the next app start (the dev server reloads by
+# itself). Specs can't override any of this.
 #
-# These are PLACEHOLDER brand values (a corporate blue/gold). Swap in the real brand tokens; do not
-# commit real logos or brand assets until approved.
+# Brand values are PLACEHOLDERS (a corporate blue/gold). Swap in the real brand; don't commit real
+# logos or brand assets until approved. The header shows `brand.mark` as a monogram instead.
 
 brand:
   name: Insights
-  primary: "#005DAA"        # header bar, primary buttons, single-series charts
-  primary_dark: "#003168"
-  accent: "#FFC72C"         # header underline, focus ring
-  on_primary: "#FFFFFF"
+  mark: "IN"                 # 1-3 letter monogram in the header
+  tagline: BI-as-Code
+  primary: "#005DAA"         # active nav, selected controls, focus, links (light mode)
+  primary_dark_mode: "#5AA2FF"  # same role in dark mode (needs more lightness to read on dark)
+  accent: "#FFC72C"          # brand gradient + focus ring
+  chart_primary: "#2a78d6"   # single-series charts and KPI sparklines (works on both surfaces)
+  chart_primary_fill: "rgba(42, 120, 214, 0.14)"
 
 font:
-  family: "'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+  family: "'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif"
   size: 13
 
-surface:
-  page: "#F4F6F9"
-  card: "#FFFFFF"
-  border: "#DDE2EA"
+radius:
+  card: 14px
+  control: 10px
 
-text:
-  primary: "#14181F"
-  secondary: "#4A5363"
-  muted: "#6B7385"
+# Surfaces and text per mode. Charts draw on transparent backgrounds, so they follow the card.
+light:
+  page: "#F3F5F9"
+  surface: "#FFFFFF"
+  surface_2: "#F7F9FC"       # inputs, table header, hover
+  border: "#E4E8EF"
+  border_strong: "#D3D9E3"
+  text: "#0E1726"
+  text_2: "#475467"
+  muted: "#6B778C"
+  grid: "#EDF0F5"
+  shadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.05)"
+  good: "#0F7A55"
+  good_bg: "#E6F6EF"
+  bad: "#C23434"
+  bad_bg: "#FDECEC"
+  flat_bg: "#EEF1F5"
 
-status:
-  positive: "#1B7F3B"
-  negative: "#C4262E"
+dark:
+  page: "#0A0E16"
+  surface: "#121824"
+  surface_2: "#182030"
+  border: "#232C3D"
+  border_strong: "#2F3A50"
+  text: "#E8EDF5"
+  text_2: "#A9B3C6"
+  muted: "#7E8AA0"
+  grid: "#1E2635"
+  shadow: "0 1px 2px rgba(0, 0, 0, 0.4)"
+  good: "#3DD68C"
+  good_bg: "rgba(61, 214, 140, 0.12)"
+  bad: "#FF7A7A"
+  bad_bg: "rgba(255, 122, 122, 0.12)"
+  flat_bg: "rgba(169, 179, 198, 0.12)"
 
-# Categorical series colours, assigned in fixed order (never cycled; a 9th series folds into
-# "Other"). This order was validated for colour-vision-deficiency separation on adjacent pairs.
-# If you change it, re-validate before shipping.
+# Categorical series colours, assigned to entities in a fixed order (never cycled; extra series go
+# grey). Validated for colour-vision-deficiency separation on adjacent pairs. Re-validate if you
+# replace it.
 categorical:
   - "#2a78d6"  # blue
   - "#eb6834"  # orange
@@ -43,5 +71,4 @@ categorical:
   - "#6250d6"  # violet
   - "#e34948"  # red
 
-# Single-series charts use this (the brand blue reads as "the" metric).
-single_series: "#005DAA"
+single_series: "#2a78d6"

@@ -6,9 +6,12 @@ owner: sales-analytics@example.com
 domain: sales
 tags: [targets, monthly]
 
+time:
+  default_range: last_12_months
+  grain: month
+  compare: previous_year
+
 filters:
-  - field: month
-    type: date_range
   - field: region
     type: checklist
 
@@ -23,7 +26,7 @@ layout:
           dataset: sales_vs_target
           x: month
           y: [sales, sales_target]
-          title: Sales and target by month
+          title: Sales vs target trend
           description: All selected regions combined. The gap between the lines is the shortfall or overshoot.
   - row:
       - chart:
