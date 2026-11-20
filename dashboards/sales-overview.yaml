@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=../framework/spec/dashboard.schema.json
+id: sales-overview
+title: Sales overview
+description: Headline sales, profit and margin with monthly trend and regional split, for sales leadership.
+owner: sales-analytics@example.com
+domain: sales
+tags: [sales, monthly]
+
+filters:
+  - field: order_date
+    type: date_range
+  - field: region
+    type: multi_select
+  - field: segment
+    type: multi_select
+  - field: category
+    type: multi_select
+
+layout:
+  - row:
+      - kpi: { dataset: orders, measure: sales, title: Sales }
+      - kpi: { dataset: orders, measure: profit, title: Profit }
+      - kpi: { dataset: orders, measure: profit_margin, title: Profit margin }
+      - kpi: { dataset: orders, measure: order_id, agg: count_distinct, title: Orders }
+  - row:
+      - chart:
+          type: line
+          dataset: orders
+          x: order_date
+          time_grain: month
+          y: sales
+          split_by: category
+          title: Monthly sales by category
+          description: Net sales per month, one line per product category.
+  - row:
+      - chart:
+          type: bar
+          dataset: orders
+          x: region
+          y: profit
+          sort: desc
+          title: Profit by region
+      - chart:
+          type: donut
+          dataset: orders
+          x: segment
+          y: sales
+          title: Sales mix by segment
+  - row:
+      - table:
+          title: Sub-category summary
+          dataset: orders
+          columns: [category, sub_category, sales, profit, profit_margin, quantity]
+          group_by: [category, sub_category]
+          sort_by: sales
+          exportable: true
+          page_size: 10

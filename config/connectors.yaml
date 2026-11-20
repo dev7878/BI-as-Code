@@ -1,0 +1,16 @@
+# Named connections used by semantic/datasets.yaml (`connector: <name>`).
+# Values like ${VAR} or ${VAR:-default} are read from environment variables, so secrets never
+# live in Git. Swapping a backend (e.g. DuckDB -> Databricks) happens here and in the dataset SQL;
+# dashboards don't change.
+
+connectors:
+  warehouse:
+    type: duckdb
+    path: ${RBC_BI_WAREHOUSE:-data/warehouse.duckdb}
+
+  # Example for later (stub connector, not wired up in the prototype):
+  # lakehouse:
+  #   type: databricks
+  #   server_hostname: ${DATABRICKS_HOST}
+  #   http_path: ${DATABRICKS_HTTP_PATH}
+  #   access_token: ${DATABRICKS_TOKEN}

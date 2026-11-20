@@ -1,0 +1,82 @@
+# Semantic layer: the ONLY place that knows about physical tables and SQL.
+# Dashboards reference these datasets and fields by name.
+#
+# Field types: date | string | integer | number | currency | percent
+#   - numeric types (integer, number, currency, percent) are measures; the rest are dimensions.
+#   - `agg` is the default aggregation when a chart or KPI rolls the field up
+#     (sum | mean | median | min | max | count | count_distinct). Defaults: sum for numbers,
+#     mean for percent.
+#   - `ratio: [numerator, denominator]` marks a ratio measure. It is re-computed correctly at any
+#     grain as sum(numerator) / sum(denominator), never as an average of row-level ratios.
+#
+# Add or change datasets with the `add-dataset` skill, then run `rbc-bi validate`.
+
+datasets:
+  orders:
+    description: >
+      One row per order line from the Superstore retail dataset (Kaggle). Use for sales, profit,
+      discount, product, customer and shipping analysis at any grain.
+    connector: warehouse
+    refresh: daily
+    grain: [order_id, product_id]
+    sql: |
+      select
+          order_id, order_date, ship_date, ship_mode,
+          customer_id, customer_name, segment,
+          city, state, region,
+          product_id, category, sub_category, product_name,
+          sales, quantity, discount, profit,
+          profit / nullif(sales, 0)                as profit_margin,
+          date_diff('day', order_date, ship_date)  as days_to_ship
+      from retail.orders
+    fields:
+      order_id:       { type: string,   label: Order ID,       description: Order identifier. Count distinct to get number of orders. }
+      order_date:     { type: date,     label: Order date,     description: Date the order was placed. }
+      ship_date:      { type: date,     label: Ship date,      description: Date the order shipped. }
+      ship_mode:      { type: string,   label: Ship mode,      description: "Standard Class, Second Class, First Class or Same Day." }
+      customer_id:    { type: string,   label: Customer ID }
+      customer_name:  { type: string,   label: Customer }
+      segment:        { type: string,   label: Segment,        description: "Consumer, Corporate or Home Office." }
+      city:           { type: string,   label: City }
+      state:          { type: string,   label: State }
+      region:         { type: string,   label: Region,         description: "Central, East, South or West." }
+      product_id:     { type: string,   label: Product ID }
+      category:       { type: string,   label: Category,       description: "Furniture, Office Supplies or Technology." }
+      sub_category:   { type: string,   label: Sub-category,   description: "17 product sub-categories such as Phones, Chairs, Binders." }
+      product_name:   { type: string,   label: Product }
+      sales:          { type: currency, label: Sales,          description: Net sales amount in USD after discount. }
+      quantity:       { type: integer,  label: Quantity,       description: Units sold. }
+      discount:       { type: percent,  label: Discount,       agg: mean, description: Discount rate applied to the line (0 to 0.8). }
+      profit:         { type: currency, label: Profit,         description: Profit in USD. Negative means a loss. }
+      profit_margin:  { type: percent,  label: Profit margin,  ratio: [profit, sales], description: Profit as a share of sales. }
+      days_to_ship:   { type: integer,  label: Days to ship,   agg: mean, description: Days between order and ship date. }
+
+  sales_vs_target:
+    description: >
+      Monthly sales, profit and sales target per region. Targets are set at month x region grain,
+      so use this dataset (not `orders`) for anything comparing actuals with targets.
+    connector: warehouse
+    refresh: daily
+    grain: [month, region]
+    sql: |
+      with actuals as (
+          select cast(date_trunc('month', order_date) as date) as month, region,
+                 sum(sales) as sales, sum(profit) as profit
+          from retail.orders
+          group by all
+      )
+      select cast(t.month as date)            as month,
+             t.region,
+             coalesce(a.sales, 0)             as sales,
+             t.sales_target,
+             coalesce(a.profit, 0)            as profit,
+             coalesce(a.sales, 0) / nullif(t.sales_target, 0) as attainment
+      from retail.sales_targets t
+      left join actuals a on a.month = cast(t.month as date) and a.region = t.region
+    fields:
+      month:         { type: date,     label: Month }
+      region:        { type: string,   label: Region,         description: "Central, East, South or West." }
+      sales:         { type: currency, label: Sales }
+      sales_target:  { type: currency, label: Sales target,   description: Monthly sales target for the region. }
+      profit:        { type: currency, label: Profit }
+      attainment:    { type: percent,  label: Target attainment, ratio: [sales, sales_target], description: Sales divided by target. 100% means on target. }

@@ -1,0 +1,47 @@
+# Design tokens: the ONE place the look of every dashboard is defined.
+# Change values here and every dashboard re-skins on the next app start. Specs can't override any
+# of this.
+#
+# These are PLACEHOLDER brand values (a corporate blue/gold). Swap in the real brand tokens; do not
+# commit real logos or brand assets until approved.
+
+brand:
+  name: Insights
+  primary: "#005DAA"        # header bar, primary buttons, single-series charts
+  primary_dark: "#003168"
+  accent: "#FFC72C"         # header underline, focus ring
+  on_primary: "#FFFFFF"
+
+font:
+  family: "'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+  size: 13
+
+surface:
+  page: "#F4F6F9"
+  card: "#FFFFFF"
+  border: "#DDE2EA"
+
+text:
+  primary: "#14181F"
+  secondary: "#4A5363"
+  muted: "#6B7385"
+
+status:
+  positive: "#1B7F3B"
+  negative: "#C4262E"
+
+# Categorical series colours, assigned in fixed order (never cycled; a 9th series folds into
+# "Other"). This order was validated for colour-vision-deficiency separation on adjacent pairs.
+# If you change it, re-validate before shipping.
+categorical:
+  - "#2a78d6"  # blue
+  - "#eb6834"  # orange
+  - "#1baf7a"  # aqua
+  - "#eda100"  # yellow
+  - "#e87ba4"  # magenta
+  - "#008300"  # green
+  - "#6250d6"  # violet
+  - "#e34948"  # red
+
+# Single-series charts use this (the brand blue reads as "the" metric).
+single_series: "#005DAA"

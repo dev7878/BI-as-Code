@@ -1,0 +1,143 @@
+/*
+ * Framework theme layered on top of Vizro's light theme.
+ * Every value comes from a CSS variable generated from framework/theme/tokens.yaml (_tokens.css).
+ * Do not hard-code brand values here; change tokens.yaml instead.
+ */
+
+:root,
+[data-bs-theme="light"] {
+  --bs-body-font-family: var(--rbc-font);
+  --bs-primary: var(--rbc-primary);
+  --bs-link-color: var(--rbc-primary);
+  --bs-body-color: var(--rbc-text);
+  --bs-secondary-color: var(--rbc-text-secondary);
+  --bs-body-bg: var(--rbc-page);
+  --mantine-color-blue-filled: var(--rbc-primary);
+}
+
+body,
+#dashboard-container {
+  background: var(--rbc-page);
+  font-family: var(--rbc-font);
+}
+
+/* ---- Brand header bar ------------------------------------------------------------------- */
+#header {
+  background: var(--rbc-primary);
+  border-bottom: 4px solid var(--rbc-accent);
+}
+#header #dashboard-title,
+#header .dashboard_title,
+#header .material-symbols-outlined {
+  color: var(--rbc-on-primary);
+}
+#dashboard-title {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Left rail (navigation + filters) --------------------------------------------------- */
+#left-side {
+  background: var(--rbc-card);
+  border-right: 1px solid var(--rbc-border);
+}
+#control-panel {
+  border-top: 1px solid var(--rbc-border);
+}
+
+/* ---- Page ------------------------------------------------------------------------------- */
+#page-title {
+  color: var(--rbc-text);
+  font-weight: 600;
+}
+
+/* Every component sits on a white card with a hairline border. */
+#page-components .figure-container:not(:has(> .card-kpi)),
+#page-components .card-kpi {
+  background: var(--rbc-card);
+  border: 1px solid var(--rbc-border);
+  border-radius: 8px;
+}
+#page-components .loading-container > .figure-container,
+#page-components > div > .loading-container {
+  height: 100%;
+}
+#page-components .figure-container:not(:has(> .card-kpi)) {
+  padding: 12px 16px 8px;
+}
+#page-components .figure-container:has(> .card-kpi) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.card-kpi {
+  height: 100%;
+}
+.figure-title {
+  color: var(--rbc-text);
+  font-weight: 600;
+}
+
+/* KPI cards: brand accent on the left edge. */
+.card-kpi {
+  border-left: 4px solid var(--rbc-primary) !important;
+  box-shadow: none;
+}
+.card-kpi .card-kpi-title {
+  color: var(--rbc-text-secondary);
+}
+.card-kpi .card-body {
+  color: var(--rbc-text);
+  font-weight: 600;
+}
+.card-kpi .color-pos {
+  color: var(--rbc-positive);
+}
+.card-kpi .color-neg {
+  color: var(--rbc-negative);
+}
+
+/* Catalog cards. */
+.card-wrapper .card {
+  border: 1px solid var(--rbc-border);
+  border-top: 3px solid var(--rbc-primary);
+  background: var(--rbc-card);
+}
+
+/* Primary actions use the brand colour. */
+.btn-primary,
+.mantine-Button-root[data-variant="filled"] {
+  background-color: var(--rbc-primary);
+  border-color: var(--rbc-primary);
+}
+
+/* ---- Snapshot mode (?snapshot=1) -------------------------------------------------------- */
+.rbc-snapshot #left-side,
+.rbc-snapshot #collapse-icon-outer,
+.rbc-snapshot #header-right,
+.rbc-snapshot .mantine-Button-root,
+.rbc-snapshot .btn,
+.rbc-snapshot .modebar-container {
+  display: none !important;
+}
+.rbc-snapshot #page-main {
+  width: 100%;
+}
+/* Let the page grow so a full-page capture includes everything below the fold. */
+.rbc-snapshot,
+.rbc-snapshot body,
+.rbc-snapshot #dashboard-container,
+.rbc-snapshot .page-main-outer,
+.rbc-snapshot #right-side,
+.rbc-snapshot #page-main,
+.rbc-snapshot #page-components {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Visible keyboard focus everywhere (WCAG 2.4.7). */
+:focus-visible {
+  outline: 3px solid var(--rbc-accent) !important;
+  outline-offset: 2px;
+}

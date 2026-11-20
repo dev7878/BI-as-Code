@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rbc-bi"
+version = "0.1.0"
+description = "BI-as-Code prototype: declarative YAML dashboards on Vizro, built by AI agents at design time."
+requires-python = ">=3.11"
+dependencies = [
+    "vizro==1.0.0",
+    "dash==4.5.1",
+    # DMC 3.x needs React 19 but Dash 4.5 ships React 18 by default -> blank page. Keep 2.x.
+    "dash-mantine-components==2.8.1",
+    "plotly==7.1.0",
+    "pydantic==2.14.4",
+    "duckdb==2.0.0",
+    "pandas==3.1.1",
+    "pyyaml>=6.0",
+    "flask-caching==2.4.1",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+rbc-bi = "rbc_bi.cli:main"
+
+# The framework lives in ./framework but is imported as `rbc_bi`.
+[tool.setuptools]
+package-dir = { "rbc_bi" = "framework" }
+packages = [
+    "rbc_bi",
+    "rbc_bi.spec",
+    "rbc_bi.compiler",
+    "rbc_bi.components",
+    "rbc_bi.modules",
+    "rbc_bi.semantic",
+    "rbc_bi.theme",
+]
+
+[tool.setuptools.package-data]
+"rbc_bi.theme" = ["*.yaml", "assets/*"]
+"rbc_bi.spec" = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

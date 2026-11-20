@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=../framework/spec/dashboard.schema.json
+id: regional-targets
+title: Regional sales vs target
+description: Monthly sales against target for each region. Which regions are ahead or behind plan?
+owner: sales-analytics@example.com
+domain: sales
+tags: [targets, monthly]
+
+filters:
+  - field: month
+    type: date_range
+  - field: region
+    type: checklist
+
+layout:
+  - row:
+      - kpi: { dataset: sales_vs_target, measure: sales, reference: sales_target, title: Sales vs target }
+      - kpi: { dataset: sales_vs_target, measure: sales_target, title: Target }
+      - kpi: { dataset: sales_vs_target, measure: attainment, title: Target attainment }
+  - row:
+      - chart:
+          type: line
+          dataset: sales_vs_target
+          x: month
+          y: [sales, sales_target]
+          title: Sales and target by month
+          description: All selected regions combined. The gap between the lines is the shortfall or overshoot.
+  - row:
+      - chart:
+          type: bar
+          dataset: sales_vs_target
+          x: region
+          y: attainment
+          sort: desc
+          title: Target attainment by region
+          description: Sales divided by target over the selected months. 100% means on target.
+      - chart:
+          type: stacked_bar
+          dataset: sales_vs_target
+          x: month
+          time_grain: quarter
+          y: sales
+          split_by: region
+          title: Quarterly sales by region

@@ -1,0 +1,573 @@
+{
+  "$defs": {
+    "AccessGroups": {
+      "additionalProperties": false,
+      "properties": {
+        "groups": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Groups",
+          "type": "array"
+        }
+      },
+      "required": [
+        "groups"
+      ],
+      "title": "AccessGroups",
+      "type": "object"
+    },
+    "Chart": {
+      "additionalProperties": false,
+      "description": "A chart from the approved set. Data is aggregated by the framework: give fields, not numbers.",
+      "properties": {
+        "type": {
+          "description": "line | bar | stacked_bar | area | scatter | donut",
+          "enum": [
+            "line",
+            "bar",
+            "stacked_bar",
+            "area",
+            "scatter",
+            "donut"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "dataset": {
+          "description": "Dataset name from semantic/datasets.yaml.",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "x": {
+          "description": "Category or date field (for scatter: a measure). For donut: the slice names.",
+          "title": "X",
+          "type": "string"
+        },
+        "y": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Measure(s) to plot. Several measures only without split_by.",
+          "title": "Y"
+        },
+        "split_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dimension that splits the data into series (legend).",
+          "title": "Split By"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Scatter only: one point per value of this dimension.",
+          "title": "Detail"
+        },
+        "agg": {
+          "anyOf": [
+            {
+              "enum": [
+                "sum",
+                "mean",
+                "median",
+                "min",
+                "max",
+                "count",
+                "count_distinct",
+                "ratio"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override the measure's default aggregation.",
+          "title": "Agg"
+        },
+        "time_grain": {
+          "anyOf": [
+            {
+              "enum": [
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bucket a date x axis. Defaults to month for dates.",
+          "title": "Time Grain"
+        },
+        "sort": {
+          "anyOf": [
+            {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Sort bars by value.",
+          "title": "Sort"
+        },
+        "top_n": {
+          "anyOf": [
+            {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Keep only the top N categories by value.",
+          "title": "Top N"
+        },
+        "horizontal": {
+          "default": false,
+          "description": "Bars only: draw horizontal bars (good for long labels).",
+          "title": "Horizontal",
+          "type": "boolean"
+        },
+        "title": {
+          "description": "Chart title. Required: it is also the accessible name.",
+          "title": "Title",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "One sentence on how to read the chart (tooltip + a11y).",
+          "title": "Description"
+        }
+      },
+      "required": [
+        "type",
+        "dataset",
+        "x",
+        "y",
+        "title"
+      ],
+      "title": "Chart",
+      "type": "object"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "description": "Exactly one of kpi, chart or table.",
+      "properties": {
+        "kpi": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Kpi"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "chart": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Chart"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "table": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Table"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Component",
+      "type": "object"
+    },
+    "Filter": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "description": "Field to filter on. Applies to every component whose dataset has it.",
+          "title": "Field",
+          "type": "string"
+        },
+        "type": {
+          "description": "multi_select | single_select | checklist (strings), date_range (dates), range (numbers)",
+          "enum": [
+            "multi_select",
+            "single_select",
+            "checklist",
+            "date_range",
+            "range"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label. Defaults to the field label.",
+          "title": "Title"
+        }
+      },
+      "required": [
+        "field",
+        "type"
+      ],
+      "title": "Filter",
+      "type": "object"
+    },
+    "Kpi": {
+      "additionalProperties": false,
+      "description": "A single headline number.",
+      "properties": {
+        "dataset": {
+          "description": "Dataset name from semantic/datasets.yaml.",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "measure": {
+          "description": "Field to aggregate. Numeric, unless agg is count or count_distinct.",
+          "title": "Measure",
+          "type": "string"
+        },
+        "agg": {
+          "anyOf": [
+            {
+              "enum": [
+                "sum",
+                "mean",
+                "median",
+                "min",
+                "max",
+                "count",
+                "count_distinct",
+                "ratio"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Aggregation. Defaults to the field's default aggregation.",
+          "title": "Agg"
+        },
+        "format": {
+          "anyOf": [
+            {
+              "enum": [
+                "currency",
+                "percent",
+                "number",
+                "integer"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Number format. Defaults from the field type.",
+          "title": "Format"
+        },
+        "title": {
+          "description": "Card title, e.g. 'Total sales'.",
+          "title": "Title",
+          "type": "string"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional measure to compare against (e.g. a target). Shows the delta in a footer.",
+          "title": "Reference"
+        },
+        "lower_is_better": {
+          "default": false,
+          "description": "Flip the good/bad signal of the delta (e.g. costs).",
+          "title": "Lower Is Better",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "dataset",
+        "measure",
+        "title"
+      ],
+      "title": "Kpi",
+      "type": "object"
+    },
+    "Row": {
+      "additionalProperties": false,
+      "properties": {
+        "row": {
+          "description": "1 to 4 components, equal width.",
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "title": "Row",
+          "type": "array"
+        }
+      },
+      "required": [
+        "row"
+      ],
+      "title": "Row",
+      "type": "object"
+    },
+    "Table": {
+      "additionalProperties": false,
+      "description": "A detail or summary table (AG Grid). With group_by it aggregates; without it shows rows.",
+      "properties": {
+        "dataset": {
+          "description": "Dataset name from semantic/datasets.yaml.",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "columns": {
+          "description": "Fields to show, in order.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Columns",
+          "type": "array"
+        },
+        "group_by": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Aggregate to this grain. Numeric columns are rolled up with their default agg.",
+          "title": "Group By"
+        },
+        "sort_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Column to sort by.",
+          "title": "Sort By"
+        },
+        "sort": {
+          "default": "desc",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "title": "Sort",
+          "type": "string"
+        },
+        "top_n": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Keep only the first N rows after sorting.",
+          "title": "Top N"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "exportable": {
+          "default": false,
+          "description": "Add CSV and Excel download buttons (exports filtered data).",
+          "title": "Exportable",
+          "type": "boolean"
+        },
+        "page_size": {
+          "default": 20,
+          "maximum": 200,
+          "minimum": 5,
+          "title": "Page Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dataset",
+        "columns"
+      ],
+      "title": "Table",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "description": "kebab-case, unique, matches the filename.",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "description": {
+      "description": "Who it is for and what question it answers.",
+      "title": "Description",
+      "type": "string"
+    },
+    "owner": {
+      "description": "Owning team or distribution list.",
+      "title": "Owner",
+      "type": "string"
+    },
+    "domain": {
+      "description": "Navigation group; one of the domains in config/platform.yaml.",
+      "title": "Domain",
+      "type": "string"
+    },
+    "access": {
+      "anyOf": [
+        {
+          "const": "public",
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/AccessGroups"
+        }
+      ],
+      "default": "public",
+      "description": "Recorded for governance. Not enforced in the prototype.",
+      "title": "Access"
+    },
+    "tags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "filters": {
+      "default": [],
+      "description": "Page-level filters, applied to every component.",
+      "items": {
+        "$ref": "#/$defs/Filter"
+      },
+      "title": "Filters",
+      "type": "array"
+    },
+    "layout": {
+      "description": "Rows of components; the framework sizes and spaces them.",
+      "items": {
+        "$ref": "#/$defs/Row"
+      },
+      "minItems": 1,
+      "title": "Layout",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "description",
+    "owner",
+    "domain",
+    "layout"
+  ],
+  "title": "Dashboard spec",
+  "type": "object"
+}

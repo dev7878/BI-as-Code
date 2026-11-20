@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=../framework/spec/dashboard.schema.json
+id: shipping-operations
+title: Shipping operations
+description: Order volume and time-to-ship by ship mode and region, for the fulfilment team.
+owner: fulfilment-ops@example.com
+domain: operations
+tags: [shipping, operations]
+
+filters:
+  - field: order_date
+    type: date_range
+  - field: ship_mode
+    type: checklist
+  - field: region
+    type: multi_select
+
+layout:
+  - row:
+      - kpi: { dataset: orders, measure: order_id, agg: count_distinct, title: Orders }
+      - kpi: { dataset: orders, measure: days_to_ship, title: Avg days to ship, format: number }
+      - kpi: { dataset: orders, measure: quantity, title: Units shipped }
+  - row:
+      - chart:
+          type: bar
+          dataset: orders
+          x: ship_mode
+          y: days_to_ship
+          sort: asc
+          title: Average days to ship by ship mode
+      - chart:
+          type: stacked_bar
+          dataset: orders
+          x: region
+          y: order_id
+          agg: count_distinct
+          split_by: ship_mode
+          title: Orders by region and ship mode
+  - row:
+      - chart:
+          type: area
+          dataset: orders
+          x: order_date
+          time_grain: month
+          y: quantity
+          split_by: ship_mode
+          title: Units shipped per month by ship mode

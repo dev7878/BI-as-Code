@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=../framework/spec/dashboard.schema.json
+id: customer-insights
+title: Customer insights
+description: Who our top customers are, how each segment is trending and where margin is strongest. For account managers.
+owner: customer-analytics@example.com
+domain: customers
+tags: [customers, segments]
+
+filters:
+  - field: order_date
+    type: date_range
+  - field: region
+    type: multi_select
+  - field: segment
+    type: checklist
+
+layout:
+  - row:
+      - kpi: { dataset: orders, measure: customer_id, agg: count_distinct, title: Active customers }
+      - kpi: { dataset: orders, measure: sales, title: Sales }
+      - kpi: { dataset: orders, measure: profit_margin, title: Profit margin }
+  - row:
+      - chart:
+          type: line
+          dataset: orders
+          x: order_date
+          time_grain: quarter
+          y: sales
+          split_by: segment
+          title: Quarterly sales by segment
+      - chart:
+          type: bar
+          dataset: orders
+          x: region
+          y: profit_margin
+          sort: desc
+          title: Profit margin by region
+  - row:
+      - table:
+          title: Top 20 customers by sales
+          dataset: orders
+          columns: [customer_name, segment, sales, profit, profit_margin, quantity]
+          group_by: [customer_name, segment]
+          sort_by: sales
+          top_n: 20
+          exportable: true
+          page_size: 10

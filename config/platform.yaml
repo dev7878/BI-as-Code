@@ -1,0 +1,12 @@
+# Platform-wide settings. Dashboards pick a `domain` from this list; navigation groups by it.
+
+title: Insights (BI-as-Code prototype)
+
+domains:
+  sales: Sales
+  products: Products
+  operations: Operations
+  customers: Customers
+
+# Max rows a table export may contain.
+export_row_cap: 1000000

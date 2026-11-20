@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../framework/spec/dashboard.schema.json
+id: product-profitability
+title: Product profitability
+description: Which sub-categories and products make or lose money, and how discounting drives it. For category managers.
+owner: merchandising@example.com
+domain: products
+tags: [profit, discount, products]
+
+filters:
+  - field: order_date
+    type: date_range
+  - field: category
+    type: multi_select
+  - field: region
+    type: multi_select
+
+layout:
+  - row:
+      - kpi: { dataset: orders, measure: profit, title: Profit }
+      - kpi: { dataset: orders, measure: profit_margin, title: Profit margin }
+      - kpi: { dataset: orders, measure: discount, title: Average discount }
+  - row:
+      - chart:
+          type: bar
+          dataset: orders
+          x: sub_category
+          y: profit
+          sort: desc
+          horizontal: true
+          title: Profit by sub-category
+          description: Bars to the left of zero are loss-making sub-categories.
+      - chart:
+          type: scatter
+          dataset: orders
+          x: discount
+          y: profit_margin
+          detail: sub_category
+          split_by: category
+          title: Discount vs margin by sub-category
+          description: Each point is a sub-category. Higher average discount goes with lower margin.
+  - row:
+      - table:
+          title: Top 25 products by sales
+          dataset: orders
+          columns: [product_name, category, sales, profit, profit_margin, quantity]
+          group_by: [product_name, category]
+          sort_by: sales
+          top_n: 25
+          exportable: true
+          page_size: 10

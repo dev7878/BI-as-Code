@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# Generated
+data/warehouse.duckdb
+data/warehouse.duckdb.wal
+data/raw/*.zip
+framework/theme/assets/_tokens.css
+outbox/
+snapshots/
+data/*.building.duckdb
